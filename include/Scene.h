@@ -33,6 +33,19 @@ public:
 	void writeImageToPPMFile(Camera *camera);
 	void convertPPMToPNG(std::string ppmFileName);
 	void forwardRenderingPipeline(Camera *camera);
+
+    Matrix4 calculateModelingTransformationMatrix(Mesh* mesh);
+    static Matrix4 calculateCameraTransformationMatrix(Camera *camera);
+    static Matrix4 calculateOrthographicTransformationMatrix(Camera *camera);
+    static Matrix4 calculatePerspectiveTransformationMatrix(Camera *camera);
+    static Matrix4 calculateViewportTransformationMatrix(Camera *camera);
+
+    void applyTransformations(
+        Mesh* mesh,
+        const Matrix4& camTr,
+        const Matrix4& viewTr,
+        const Matrix4& projTr,
+        const Matrix4& modelTr);
 };
 
 #endif

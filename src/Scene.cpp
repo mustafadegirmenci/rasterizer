@@ -341,7 +341,6 @@ void Scene::convertPPMToPNG(string ppmFileName)
 {
 	string command;
 
-	// TODO: Change implementation if necessary.
 	command = "./magick convert " + ppmFileName + " " + ppmFileName + ".png";
 	system(command.c_str());
 }
@@ -351,5 +350,202 @@ void Scene::convertPPMToPNG(string ppmFileName)
 */
 void Scene::forwardRenderingPipeline(Camera *camera)
 {
-	// TODO: Implement this function
+    auto camTr = calculateCameraTransformationMatrix(camera);
+    auto projTr = (camera->projectionType == 0) ?
+                  calculateOrthographicTransformationMatrix(camera) :
+                  calculatePerspectiveTransformationMatrix(camera);
+    auto viewTr = calculateViewportTransformationMatrix(camera);
+
+    for (auto & mesh : meshes)
+    {
+        auto modelTr = calculateModelingTransformationMatrix(mesh);
+
+        for (auto & triangle : mesh->triangles)
+        {
+            auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
+
+            Vec4 applied[3];
+            for (int i = 0; i < 3; ++i)
+            {
+                auto vertexId = triangle.vertexIds[i];
+                auto vertex = vertices[vertexId];
+                applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, vertex->colorId));
+            }
+        }
+    }
+
 }
+
+#pragma region Transformation
+Matrix4 Scene::calculateModelingTransformationMatrix(Mesh* mesh){
+    auto modelingTransformation = getIdentityMatrix();
+
+    for (int i = 0; i < mesh->numberOfTransformations; ++i) {
+
+        // Translation
+        if (mesh->transformationTypes[i] == 't')
+        {
+            auto translation = translations[mesh->transformationIds[i] - 1];
+            auto x = translation->tx;
+            auto y = translation->ty;
+            auto z = translation->tz;
+            auto translationMatrix = Matrix4(
+                    (double[4][4]){{1,0,0,x},
+                                   {0,1,0,y},
+                                   {0,0,1,z},
+                                   {0,0,0,1}});
+            modelingTransformation = multiplyMatrixWithMatrix(translationMatrix, modelingTransformation);
+        }
+
+        // Scaling
+        if (mesh->transformationTypes[i] == 's')
+        {
+            auto scaling = scalings[mesh->transformationIds[i] - 1];
+            auto x = scaling->sx;
+            auto y = scaling->sy;
+            auto z = scaling->sz;
+            auto scalingMatrix = Matrix4(
+                    (double[4][4]){{x,0,0,0},
+                                   {0,y,0,0},
+                                   {0,0,z,0},
+                                   {0,0,0,1}});
+            modelingTransformation = multiplyMatrixWithMatrix(scalingMatrix, modelingTransformation);
+        }
+
+        // Rotation
+        if (mesh->transformationTypes[i] == 's')
+        {
+            auto rotation = rotations[mesh->transformationIds[i] - 1];
+
+            auto u = Vec3(rotation->ux, rotation->uy, rotation->uz, -1);
+            auto m = std::min(std::min(rotation->ux, rotation->uy), abs(rotation->uz));
+            auto v = normalizeVec3(((m == abs(rotation->ux)) ? Vec3(0, -1 * rotation->uz, rotation->uy, -1) :
+                                    (m == abs(rotation->uy)) ? Vec3(-1 * rotation->uz, 0, rotation->ux, -1) :
+                                    Vec3(-1 * rotation->uy, rotation->ux, 0, -1)));
+            auto w = normalizeVec3(crossProductVec3(u, v));
+            double mMatrix[4][4] =
+                    {{u.x,  u.y,    u.z,    0},
+                     {v.x,  v.y,    v.z,    0},
+                     {w.x,  w.y,    w.z,    0},
+                     {0,    0,      0,      1}};
+            double mMatrix_inverse[4][4] =
+                    {{u.x,  v.x,    w.x,    0},
+                     {u.y,  v.y,    w.y,    0},
+                     {u.z,  v.z,    w.z,    0},
+                     {0,    0,      0,      1}};
+
+            auto ra = rotation->angle * M_PI/180;
+            auto rotationMatrix = Matrix4(
+                    (double[4][4]){{1,      0,          0,          0},
+                                   {0,      cos(ra),    -sin(ra),   0},
+                                   {0,      sin(ra),    cos(ra),    0},
+                                   {0,      0,          0,          1}});
+
+            auto r1 = multiplyMatrixWithMatrix(rotationMatrix, mMatrix);
+            auto r2 = multiplyMatrixWithMatrix(mMatrix_inverse, r1);
+            modelingTransformation = multiplyMatrixWithMatrix(r2, modelingTransformation);
+        }
+    }
+
+    return modelingTransformation;
+}
+
+Matrix4 Scene::calculateCameraTransformationMatrix(Camera* camera){
+    auto x = camera->position.x;
+    auto y = camera->position.y;
+    auto z = camera->position.z;
+    auto u = camera->u;
+    auto v = camera->v;
+    auto w = camera->w;
+
+    auto translate = Matrix4((double[4][4]){
+            {1, 0, 0, -x},
+            {0, 1, 0, -y},
+            {0, 0, 1, -z},
+            {0, 0, 0, 1}
+    });
+
+    auto rotate = Matrix4((double[4][4]){
+            {u.x,   u.y,    u.z,    0},
+            {v.x,   v.y,    v.z,    0},
+            {w.x,   w.y,    w.z,    0},
+            {0,     0,      0,      1}
+    });
+
+    return multiplyMatrixWithMatrix(rotate, translate);
+}
+
+Matrix4 Scene::calculateOrthographicTransformationMatrix(Camera* camera){
+    auto l = camera->left;
+    auto r = camera->right;
+    auto t = camera->top;
+    auto b = camera->bottom;
+    auto n = camera->near;
+    auto f = camera->far;
+
+    auto perspective = Matrix4((double[4][4]){
+        {2/(r - l),             0,                  0,                  -((r + l) / (r - l))},
+        {0,                     2/(t - b),          0,                  -((t + b) / (t - b))},
+        {0,                     0,                  -(2/(f - n)),       -((f + n) / (f - n))},
+        {0,                     0,                  0,                  1                   }
+    });
+
+    return perspective;
+}
+
+Matrix4 Scene::calculatePerspectiveTransformationMatrix(Camera* camera){
+    auto l = camera->left;
+    auto r = camera->right;
+    auto t = camera->top;
+    auto b = camera->bottom;
+    auto n = camera->near;
+    auto f = camera->far;
+
+    auto perspective = Matrix4((double[4][4]){
+            {(2*n) / (r - l),   0,                  (r + l) / (r - l),      0                       },
+            {0,                 (2*n) / (t - b),    (t + b) / (t - b),      0                       },
+            {0,                 0,                  -((f + n) / (f - n)),   -((2 * f * n) / (f - n))},
+            {0,                 0,                  -1,                     0                       }
+    });
+
+    return perspective;
+}
+
+Matrix4 Scene::calculateViewportTransformationMatrix(Camera* camera){
+    auto h = camera->horRes;
+    auto v = camera->verRes;
+
+    auto viewport = Matrix4((double[4][4]){
+        {h/2.0,     0,          0,          (h-1)/2.0},
+        {0,         v/2.0,      0,          (v-1)/2.0},
+        {0,         0,          0.5,        0.5      },
+        {0,         0,          0,          1        }
+    });
+
+    return viewport;
+}
+#pragma endregion
+//    for each mesh
+//        transformedMesh = mesh // Initialize with original mesh
+//
+//        // Apply transformations
+//        for each transformation in mesh.transformations
+//            applyTransformation(transformedMesh, transformation)
+//
+//        // Apply camera transformations
+//        applyCameraTransformations(transformedMesh, camera)
+//
+//        // Clip triangles against the view frustum
+//        clippedTriangles = clipTriangles(transformedMesh.triangles, camera)
+//
+//        // Apply back-face culling
+//        if scene.cullingEnabled
+//            culledTriangles = performBackFaceCulling(clippedTriangles, camera)
+//        else
+//            culledTriangles = clippedTriangles
+//
+//        // Project triangles onto the image plane
+//        projectedTriangles = projectTriangles(culledTriangles, camera)
+//
+//        // Rasterization: Fill pixels with triangle colors
+//        rasterizeTriangles(projectedTriangles, camera, scene)

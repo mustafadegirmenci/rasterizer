@@ -1,6 +1,8 @@
 #ifndef __MATRIX4_H__
 #define __MATRIX4_H__
 
+#include "Vec3.h"
+
 class Matrix4
 {
 public:
