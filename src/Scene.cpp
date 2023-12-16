@@ -15,9 +15,7 @@
 using namespace tinyxml2;
 using namespace std;
 
-/*
-	Parses XML file
-*/
+// Parses XML file
 Scene::Scene(const char *xmlPath)
 {
 	const char *str;
@@ -256,9 +254,7 @@ void Scene::assignColorToPixel(int i, int j, Color c)
 	this->image[i][j].b = c.b;
 }
 
-/*
-	Initializes image with background color
-*/
+// Initializes image with background color
 void Scene::initializeImage(Camera *camera)
 {
 	if (this->image.empty())
@@ -293,11 +289,9 @@ void Scene::initializeImage(Camera *camera)
 	}
 }
 
-/*
-	If given value is less than 0, converts value to 0.
-	If given value is more than 255, converts value to 255.
-	Otherwise returns value itself.
-*/
+// If given value is less than 0, converts value to 0.
+// If given value is more than 255, converts value to 255.
+// Otherwise, returns value itself.
 int Scene::makeBetweenZeroAnd255(double value)
 {
 	if (value >= 255.0)
@@ -307,9 +301,7 @@ int Scene::makeBetweenZeroAnd255(double value)
 	return (int)(value);
 }
 
-/*
-	Writes contents of image (Color**) into a PPM file.
-*/
+// Writes contents of image (Color**) into a PPM file.
 void Scene::writeImageToPPMFile(Camera *camera)
 {
 	ofstream fout;
@@ -334,9 +326,7 @@ void Scene::writeImageToPPMFile(Camera *camera)
 	fout.close();
 }
 
-/*
-	Converts PPM image in given path to PNG file, by calling ImageMagick's 'convert' command.
-*/
+// Converts PPM image in given path to PNG file, by calling ImageMagick's 'convert' command.
 void Scene::convertPPMToPNG(string ppmFileName)
 {
 	string command;
@@ -345,9 +335,7 @@ void Scene::convertPPMToPNG(string ppmFileName)
 	system(command.c_str());
 }
 
-/*
-	Transformations, clipping, culling, rasterization are done here.
-*/
+// Transformations, clipping, culling, rasterization are done here.
 void Scene::forwardRenderingPipeline(Camera *camera)
 {
     // Calculate camera transformation
