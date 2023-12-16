@@ -359,11 +359,10 @@ void Scene::forwardRenderingPipeline(Camera *camera)
     for (auto & mesh : meshes)
     {
         auto modelTr = calculateModelingTransformationMatrix(mesh);
+        auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
 
         for (auto & triangle : mesh->triangles)
         {
-            auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
-
             Vec4 applied[3];
             for (int i = 0; i < 3; ++i)
             {
@@ -371,9 +370,19 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 auto vertex = vertices[vertexId];
                 applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, vertex->colorId));
             }
+
+            if (cullingEnabled)
+            {
+                auto v0 = Vec3(applied[0].x, applied[0].y, applied[0].z);
+                auto v1 = Vec3(applied[1].x, applied[1].y, applied[1].z);
+                auto v2 = Vec3(applied[2].x, applied[2].y, applied[2].z);
+                auto normal = normalizeVec3(crossProductVec3(subtractVec3(v1, v0), subtractVec3(v2, v0)));
+                if (dotProductVec3(normal, v0) < 0){
+                    continue;
+                }
+            }
         }
     }
-
 }
 
 #pragma region Transformation
