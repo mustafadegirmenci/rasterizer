@@ -350,19 +350,28 @@ void Scene::convertPPMToPNG(string ppmFileName)
 */
 void Scene::forwardRenderingPipeline(Camera *camera)
 {
+    // Calculate camera transformation
     auto camTr = calculateCameraTransformationMatrix(camera);
+
+    // Calculate projection transformation
     auto projTr = (camera->projectionType == 0) ?
                   calculateOrthographicTransformationMatrix(camera) :
                   calculatePerspectiveTransformationMatrix(camera);
+
+    // Calculate viewport transformation
     auto viewTr = calculateViewportTransformationMatrix(camera);
 
     for (auto & mesh : meshes)
     {
+        // Calculate modeling transformation
         auto modelTr = calculateModelingTransformationMatrix(mesh);
+
+        // Precalculate combined transformation
         auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
 
         for (auto & triangle : mesh->triangles)
         {
+            // Apply transformations
             Vec4 applied[3];
             for (int i = 0; i < 3; ++i)
             {
@@ -371,6 +380,7 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, vertex->colorId));
             }
 
+            // Apply culling
             if (cullingEnabled)
             {
                 auto v0 = Vec3(applied[0].x, applied[0].y, applied[0].z);
@@ -380,6 +390,16 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 if (dotProductVec3(normal, v0) < 0){
                     continue;
                 }
+            }
+
+            // Wireframe
+            if (mesh->type == 0){
+
+            }
+
+            // Solid
+            if (mesh->type == 1){
+
             }
         }
     }
