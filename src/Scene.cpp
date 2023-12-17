@@ -401,10 +401,17 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
 
                 // Apply viewport transformation
-                // TODO
+                for each (Vec4 vertex in applied){
+                    vertex = multiplyMatrixWithVec4(viewTr, vertex);
+                }
 
                 // Apply rasterization
-                // TODO
+                if (line0_visibility)
+                    rasterizeWireframe(applied[0], c0, applied[1], c1);
+                if (line1_visibility)
+                    rasterizeWireframe(applied[1], c1, applied[2], c2);
+                if (line2_visibility)
+                    rasterizeWireframe(applied[2], c2, applied[0], c0);
 
             }
 
@@ -609,7 +616,7 @@ int computeOutcode(float x, float y, float z) {
 }
 
 // Clip a line using Cohen-Sutherland algorithm
-bool clipLine(Vec3& line1, Color& c1, Vec3& line2, Color& c2) {
+bool clipLine(Vec4& line1, Color& c1, Vec4& line2, Color& c2) {
     // Compute outcodes for the two endpoints of the line
     int outcode1 = computeOutcode(line1.x, line1.y, line1.z);
     int outcode2 = computeOutcode(line2.x, line2.y, line2.z);
@@ -697,9 +704,87 @@ bool clipLine(Vec3& line1, Color& c1, Vec3& line2, Color& c2) {
     return accept;
 }
 
-void Scene::rasterizeWireframe(Vec4 points[3]){
+void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color& endColor) {
+    // Calculate differences in x and y coordinates
+    double dx = end.x - start.x;
+    double dy = end.y - start.y;
+    Color dc = endColor - startColor;
 
+    // Variables for the Midpoint Algorithm
+    int d, increment = 1;
+    Color currentColor;
+
+    // Check if the line slope is between 0 < m <= 1
+    if (std::abs(dy) <= std::abs(dx)) {
+        // Normal Midpoint Algorithm
+        if (dx < 0) {
+            // Swap points to ensure x is always increasing
+            std::swap(start, end);
+            std::swap(startColor, endColor);
+        }
+        if (dy < 0) {
+            // Ensure the line goes in the negative direction in each iteration
+            increment = -1;
+        }
+
+        int y = start.y;
+        currentColor = startColor;
+        d = increment * 0.5 * dx - dy;
+        dc /= dx;
+
+        for (int x = start.x; x <= end.x; x++) {
+            // Set the pixel color
+            image[x][y] = currentColor.round();
+
+            if (d * increment < 0) { // Choose NE
+                y += increment;
+                d -= dy;
+                d += increment * dx;
+            }
+            else { // Choose E
+                d -= dy;
+            }
+
+            // Update color for the next pixel
+            currentColor = currentColor + dc;
+        }
+    }
+    else if (std::abs(dy) > std::abs(dx)) {
+        // Modified Midpoint Algorithm for 1 < m < INF
+        if (dy < 0) {
+            // Swap points to ensure y is always increasing
+            std::swap(start, end);
+            std::swap(startColor, endColor);
+        }
+        if (dx < 0) {
+            // Ensure the line goes in the negative direction in each iteration
+            increment = -1;
+        }
+
+        int x = start.x;
+        currentColor = startColor;
+        d = dx - increment * 0.5 * dy;
+        dc /= dy;
+
+        for (int y = start.y; y <= end.y; y++) {
+            // Set the pixel color
+            image[x][y] = currentColor.round();
+
+            if (d * increment > 0) { // Choose NE
+                x += increment;
+                d += dx;
+                d -= increment * dy;
+            }
+            else {
+                d += dx;
+            }
+
+            // Update color for the next pixel
+            currentColor = currentColor + dc;
+        }
+    }
 }
+
 
 void Scene::rasterizeSolid(Vec4 points[3]){
 
