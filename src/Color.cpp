@@ -21,6 +21,14 @@ Color::Color(const Color &other)
     this->b = other.b;
 }
 
+Color Color::round() const {
+    Color c;
+    c.r = (int) (r + 0.5);
+    c.g = (int) (g + 0.5);
+    c.b = (int) (b + 0.5);
+    return c;
+}
+
 std::ostream &operator<<(std::ostream &os, const Color &c)
 {
     os << std::fixed << std::setprecision(0) << "rgb(" << c.r << ", " << c.g << ", " << c.b << ")";

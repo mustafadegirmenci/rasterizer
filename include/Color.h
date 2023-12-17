@@ -9,6 +9,7 @@ public:
     Color();
     Color(double r, double g, double b);
     Color(const Color &other);
+    Color round() const;
     friend std::ostream &operator<<(std::ostream &os, const Color &c);
 };
 
