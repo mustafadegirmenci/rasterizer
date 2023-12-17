@@ -1,8 +1,8 @@
-#*
-#*/
-#!/src/
-#!/src/**
-#!/include/
-#!/include/**
-#!Makefile
-#!.gitignore
+*
+*/
+!/src/
+!/src/**
+!/include/
+!/include/**
+!Makefile
+!.gitignore
