@@ -21,6 +21,38 @@ Color::Color(const Color &other)
     this->b = other.b;
 }
 
+Color Color::operator+(const Color & rhs) const {
+    Color c;
+    c.r = r + rhs.r;
+    c.g = g + rhs.g;
+    c.b = b + rhs.b;
+    return c;
+}
+
+Color Color::operator-(const Color & rhs) const {
+    Color c;
+    c.r = r - rhs.r;
+    c.g = g - rhs.g;
+    c.b = b - rhs.b;
+    return c;
+}
+
+Color Color::operator*(double num) const {
+    Color c;
+    c.r = r*num;
+    c.g = g*num;
+    c.b = b*num;
+    return c;
+}
+
+Color Color::operator/(double num) const {
+    Color c;
+    c.r = r/num;
+    c.g = g/num;
+    c.b = b/num;
+    return c;
+}
+
 Color Color::round() const {
     Color c;
     c.r = (int) (r + 0.5);

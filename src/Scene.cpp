@@ -12,11 +12,11 @@
 #include "../include/Scene.h"
 
 // Outcodes for Cohen-Sutherland algorithm
-#define INSIDE = 0; // 0000
-#define LEFT = 1;   // 0001
-#define RIGHT = 2;  // 0010
-#define BOTTOM = 4; // 0100
-#define TOP = 8;    // 1000
+#define INSIDE 0 // 0000
+#define LEFT 1   // 0001
+#define RIGHT 2  // 0010
+#define BOTTOM 4 // 0100
+#define TOP 8    // 1000
 
 using namespace tinyxml2;
 using namespace std;
@@ -341,102 +341,6 @@ void Scene::convertPPMToPNG(string ppmFileName)
 	system(command.c_str());
 }
 
-// Transformations, clipping, culling, rasterization are done here.
-void Scene::forwardRenderingPipeline(Camera *camera)
-{
-    // Calculate camera transformation
-    auto camTr = calculateCameraTransformationMatrix(camera);
-
-    // Calculate projection transformation
-    auto projTr = (camera->projectionType == 0) ?
-                  calculateOrthographicTransformationMatrix(camera) :
-                  calculatePerspectiveTransformationMatrix(camera);
-
-    // Calculate viewport transformation
-    auto viewTr = calculateViewportTransformationMatrix(camera);
-
-    for (auto & mesh : meshes)
-    {
-        // Calculate modeling transformation
-        auto modelTr = calculateModelingTransformationMatrix(mesh);
-
-        // Precalculate combined transformation
-        auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
-
-        for (auto & triangle : mesh->triangles)
-        {
-            // Apply transformations
-            Vec4 applied[3];
-            for (int i = 0; i < 3; ++i)
-            {
-                auto vertexId = triangle.vertexIds[i];
-                auto vertex = vertices[vertexId];
-                applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, 1, vertex->colorId));
-            }
-
-            // Apply culling
-            if (cullingEnabled)
-            {
-                auto v0 = Vec3(applied[0].x, applied[0].y, applied[0].z);
-                auto v1 = Vec3(applied[1].x, applied[1].y, applied[1].z);
-                auto v2 = Vec3(applied[2].x, applied[2].y, applied[2].z);
-                auto normal = normalizeVec3(crossProductVec3(subtractVec3(v1, v0), subtractVec3(v2, v0)));
-                if (dotProductVec3(normal, v0) < 0){
-                    continue;
-                }
-            }
-
-            // Wireframe
-            if (mesh->type == 0){
-                // Generate lines
-                // TODO
-
-                // Apply clipping
-                Color c0 = this->colorsOfVertices[applied[0].colorId - 1];
-                Color c1 = this->colorsOfVertices[applied[1].colorId - 1];
-                Color c2 = this->colorsOfVertices[applied[2].colorId - 1];
-
-                bool line0_visibility = clipLine(applied[0], c0, applied[1], c1);
-                bool line1_visibility = clipLine(applied[1], c1, applied[2], c2);
-                bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
-
-                // Apply viewport transformation
-                for each (Vec4 vertex in applied){
-                    vertex = multiplyMatrixWithVec4(viewTr, vertex);
-                }
-
-                // Apply rasterization
-                if (line0_visibility)
-                    rasterizeWireframe(applied[0], c0, applied[1], c1);
-                if (line1_visibility)
-                    rasterizeWireframe(applied[1], c1, applied[2], c2);
-                if (line2_visibility)
-                    rasterizeWireframe(applied[2], c2, applied[0], c0);
-
-            }
-
-            // Solid
-            if (mesh->type == 1){
-                // Apply perspective division
-                for (auto & point : applied)
-                {
-                    auto perspective = point.t;
-                    point = divideVec4ByScalar(point, perspective);
-                }
-
-                // Apply viewport transformation
-                for (auto & point : applied)
-                {
-                    point = multiplyMatrixWithVec4(viewTr, point);
-                }
-
-                // Apply rasterization
-                rasterizeSolid(applied);
-            }
-        }
-    }
-}
-
 #pragma region Transformation
 Matrix4 Scene::calculateModelingTransformationMatrix(Mesh* mesh){
     auto modelingTransformation = getIdentityMatrix();
@@ -545,10 +449,10 @@ Matrix4 Scene::calculateOrthographicTransformationMatrix(Camera* camera){
     auto f = camera->far;
 
     auto perspective = Matrix4((double[4][4]){
-        {2/(r - l),             0,                  0,                  -((r + l) / (r - l))},
-        {0,                     2/(t - b),          0,                  -((t + b) / (t - b))},
-        {0,                     0,                  -(2/(f - n)),       -((f + n) / (f - n))},
-        {0,                     0,                  0,                  1                   }
+            {2/(r - l),             0,                  0,                  -((r + l) / (r - l))},
+            {0,                     2/(t - b),          0,                  -((t + b) / (t - b))},
+            {0,                     0,                  -(2/(f - n)),       -((f + n) / (f - n))},
+            {0,                     0,                  0,                  1                   }
     });
 
     return perspective;
@@ -577,10 +481,10 @@ Matrix4 Scene::calculateViewportTransformationMatrix(Camera* camera){
     auto v = camera->verRes;
 
     auto viewport = Matrix4((double[4][4]){
-        {h/2.0,     0,          0,          (h-1)/2.0},
-        {0,         v/2.0,      0,          (v-1)/2.0},
-        {0,         0,          0.5,        0.5      },
-        {0,         0,          0,          1        }
+            {h/2.0,     0,          0,          (h-1)/2.0},
+            {0,         v/2.0,      0,          (v-1)/2.0},
+            {0,         0,          0.5,        0.5      },
+            {0,         0,          0,          1        }
     });
 
     return viewport;
@@ -616,7 +520,7 @@ int computeOutcode(float x, float y, float z) {
 }
 
 // Clip a line using Cohen-Sutherland algorithm
-bool clipLine(Vec4& line1, Color& c1, Vec4& line2, Color& c2) {
+bool clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
     // Compute outcodes for the two endpoints of the line
     int outcode1 = computeOutcode(line1.x, line1.y, line1.z);
     int outcode2 = computeOutcode(line2.x, line2.y, line2.z);
@@ -704,11 +608,11 @@ bool clipLine(Vec4& line1, Color& c1, Vec4& line2, Color& c2) {
     return accept;
 }
 
-void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color& endColor) {
+void Scene::rasterizeWireframe(Vec4& start, Color* startColor, Vec4& end, Color* endColor) {
     // Calculate differences in x and y coordinates
     double dx = end.x - start.x;
     double dy = end.y - start.y;
-    Color dc = endColor - startColor;
+    Color dc = *endColor - *startColor;
 
     // Variables for the Midpoint Algorithm
     int d, increment = 1;
@@ -728,9 +632,9 @@ void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color&
         }
 
         int y = start.y;
-        currentColor = startColor;
+        currentColor = *startColor;
         d = increment * 0.5 * dx - dy;
-        dc /= dx;
+        dc = dc / dx;
 
         for (int x = start.x; x <= end.x; x++) {
             // Set the pixel color
@@ -762,9 +666,9 @@ void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color&
         }
 
         int x = start.x;
-        currentColor = startColor;
+        currentColor = *startColor;
         d = dx - increment * 0.5 * dy;
-        dc /= dy;
+        dc = dc / dy;
 
         for (int y = start.y; y <= end.y; y++) {
             // Set the pixel color
@@ -786,61 +690,103 @@ void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color&
 }
 
 
-void Scene::rasterizeSolid(const Camera& camera, Vec4 pointA, Vec4 pointB, Vec4 pointC){
-    // Calculate bounds for efficient rasterization
-    auto xMin = (int)max(0.0, min(pointA.x, min(pointB.x, pointC.x)));
-    auto yMin = (int)max(0.0, min(pointA.y, min(pointB.y, pointC.y)));
+void Scene::rasterizeSolid(Vec4 points[3]){
 
-    auto xMax = (int)max((double)camera.horRes, max(pointA.x, max(pointB.x, pointC.x)));
-    auto yMax = (int)max((double)camera.verRes, max(pointA.y, max(pointB.y, pointC.y)));
+}
+#pragma endregion
 
-    // Derive line equations
-    auto x0 = pointA.x;
-    auto x1 = pointB.x;
-    auto x2 = pointC.x;
-    auto y0 = pointA.y;
-    auto y1 = pointB.y;
-    auto y2 = pointC.y;
+// Transformations, clipping, culling, rasterization are done here.
+void Scene::forwardRenderingPipeline(Camera *camera)
+{
+    // Calculate camera transformation
+    auto camTr = calculateCameraTransformationMatrix(camera);
 
-    auto f01 = [&](double x, double y) {
-        return (x * (y0 - y1)) + (y * (x1 - x0)) + (x0 * y1) - (y0 * x1);
-    };
-    auto f12 = [&](double x, double y) {
-        return (x * (y1 - y2)) + (y * (x2 - x1)) + (x1 * y2) - (y1 * x2);
-    };
-    auto f20 = [&](double x, double y) {
-        return (x * (y2 - y0)) + (y * (x0 - x2)) + (x2 * y0) - (y2 * x0);
-    };
+    // Calculate projection transformation
+    auto projTr = (camera->projectionType == 0) ?
+                  calculateOrthographicTransformationMatrix(camera) :
+                  calculatePerspectiveTransformationMatrix(camera);
 
-    // Iterate over the pixels in the bounds
-    for (auto y = yMin; y < yMax; ++y)
+    // Calculate viewport transformation
+    auto viewTr = calculateViewportTransformationMatrix(camera);
+
+    for (auto & mesh : meshes)
     {
-        for (auto x = xMin; x < xMax; ++x)
+        // Calculate modeling transformation
+        auto modelTr = calculateModelingTransformationMatrix(mesh);
+
+        // Precalculate combined transformation
+        auto combined = multiplyMatrixWithMatrix(projTr, multiplyMatrixWithMatrix(camTr, modelTr));
+
+        for (auto & triangle : mesh->triangles)
         {
-            // Calculate barycentric coordinates
-            auto alpha = f12(x, y) / f12(x0, y0);
-            auto beta = f20(x, y) / f20(x1, y1);
-            auto gamma = f01(x, y) / f01(x2, y2);
+            // Apply transformations
+            Vec4 applied[3];
+            for (int i = 0; i < 3; ++i)
+            {
+                auto vertexId = triangle.vertexIds[i];
+                auto vertex = vertices[vertexId];
+                applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, 1, vertex->colorId));
+            }
 
-            if (alpha >= 0 && beta >= 0 && gamma >= 0){
-                // Calculate color
-                auto c0 = colorsOfVertices[pointA.colorId];
-                auto c1 = colorsOfVertices[pointB.colorId];
-                auto c2 = colorsOfVertices[pointC.colorId];
+            // Apply culling
+            if (cullingEnabled)
+            {
+                auto v0 = Vec3(applied[0].x, applied[0].y, applied[0].z);
+                auto v1 = Vec3(applied[1].x, applied[1].y, applied[1].z);
+                auto v2 = Vec3(applied[2].x, applied[2].y, applied[2].z);
+                auto normal = normalizeVec3(crossProductVec3(subtractVec3(v1, v0), subtractVec3(v2, v0)));
+                if (dotProductVec3(normal, v0) < 0){
+                    continue;
+                }
+            }
 
-                auto color = Color(
-                        (alpha * c0->r) + (beta * c1->r) + (gamma * c0->r),
-                        (alpha * c0->g) + (beta * c1->g) + (gamma * c2->g),
-                        (alpha * c0->b) + (beta * c1->b) + (gamma * c2->b)
-                        );
+            // Wireframe
+            if (mesh->type == 0){
+                // Generate lines
+                // TODO
 
-                // Round color
-                color = color.round();
+                // Apply clipping
+                Color *c0 = this->colorsOfVertices[applied[0].colorId - 1];
+                Color *c1 = this->colorsOfVertices[applied[1].colorId - 1];
+                Color *c2 = this->colorsOfVertices[applied[2].colorId - 1];
 
-                // Draw pixel
-                image[x][y] = color;
+                bool line0_visibility = clipLine(applied[0], c0, applied[1], c1);
+                bool line1_visibility = clipLine(applied[1], c1, applied[2], c2);
+                bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
+
+                // Apply viewport transformation
+                for (auto vertex:applied){
+                    vertex = multiplyMatrixWithVec4(viewTr, vertex);
+                }
+
+                // Apply rasterization
+                if (line0_visibility)
+                    rasterizeWireframe(applied[0], c0, applied[1], c1);
+                if (line1_visibility)
+                    rasterizeWireframe(applied[1], c1, applied[2], c2);
+                if (line2_visibility)
+                    rasterizeWireframe(applied[2], c2, applied[0], c0);
+
+            }
+
+            // Solid
+            if (mesh->type == 1){
+                // Apply perspective division
+                for (auto & point : applied)
+                {
+                    auto perspective = point.t;
+                    point = divideVec4ByScalar(point, perspective);
+                }
+
+                // Apply viewport transformation
+                for (auto & point : applied)
+                {
+                    point = multiplyMatrixWithVec4(viewTr, point);
+                }
+
+                // Apply rasterization
+                rasterizeSolid(applied);
             }
         }
     }
 }
-#pragma endregion
