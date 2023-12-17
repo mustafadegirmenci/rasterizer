@@ -1,7 +1,6 @@
 #include <fstream>
 #include <cstdio>
 #include <cstdlib>
-#include <iomanip>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -382,11 +381,30 @@ void Scene::forwardRenderingPipeline(Camera *camera)
 
             // Wireframe
             if (mesh->type == 0){
+                // Generate lines
+                // TODO
+
+                // Apply clipping
+                // TODO
+
+                // Apply viewport transformation
+                // TODO
+
+                // Apply rasterization
+                // TODO
 
             }
 
             // Solid
             if (mesh->type == 1){
+                // Apply perspective division
+                // TODO
+
+                // Apply viewport transformation
+                // TODO
+
+                // Apply rasterization
+                // TODO
 
             }
         }
@@ -543,3 +561,12 @@ Matrix4 Scene::calculateViewportTransformationMatrix(Camera* camera){
 }
 #pragma endregion
 
+#pragma region Rasterization
+void Scene::rasterizeWireframe(Vec4 points[3]){
+
+}
+
+void Scene::rasterizeSolid(Vec4 points[3]){
+
+}
+#pragma endregion

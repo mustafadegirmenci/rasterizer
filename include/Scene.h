@@ -25,7 +25,7 @@ public:
 	std::vector<Translation *> translations;
 	std::vector<Mesh *> meshes;
 
-	Scene(const char *xmlPath);
+	explicit Scene(const char *xmlPath);
 
 	void assignColorToPixel(int i, int j, Color c);
 	void initializeImage(Camera *camera);
@@ -40,12 +40,8 @@ public:
     static Matrix4 calculatePerspectiveTransformationMatrix(Camera *camera);
     static Matrix4 calculateViewportTransformationMatrix(Camera *camera);
 
-    void applyTransformations(
-        Mesh* mesh,
-        const Matrix4& camTr,
-        const Matrix4& viewTr,
-        const Matrix4& projTr,
-        const Matrix4& modelTr);
+    void rasterizeWireframe(Vec4 *points);
+    void rasterizeSolid(Vec4 *points);
 };
 
 #endif
