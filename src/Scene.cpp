@@ -411,14 +411,20 @@ void Scene::forwardRenderingPipeline(Camera *camera)
             // Solid
             if (mesh->type == 1){
                 // Apply perspective division
-                // TODO
+                for (auto & point : applied)
+                {
+                    auto perspective = point.t;
+                    point = divideVec4ByScalar(point, perspective);
+                }
 
                 // Apply viewport transformation
-                // TODO
+                for (auto & point : applied)
+                {
+                    point = multiplyMatrixWithVec4(viewTr, point);
+                }
 
                 // Apply rasterization
-                // TODO
-
+                rasterizeSolid(applied);
             }
         }
     }
