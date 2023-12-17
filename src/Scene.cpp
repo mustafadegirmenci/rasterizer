@@ -786,7 +786,61 @@ void Scene::rasterizeWireframe(Vec4& start, Color& startColor, Vec4& end, Color&
 }
 
 
-void Scene::rasterizeSolid(Vec4 points[3]){
+void Scene::rasterizeSolid(const Camera& camera, Vec4 pointA, Vec4 pointB, Vec4 pointC){
+    // Calculate bounds for efficient rasterization
+    auto xMin = (int)max(0.0, min(pointA.x, min(pointB.x, pointC.x)));
+    auto yMin = (int)max(0.0, min(pointA.y, min(pointB.y, pointC.y)));
 
+    auto xMax = (int)max((double)camera.horRes, max(pointA.x, max(pointB.x, pointC.x)));
+    auto yMax = (int)max((double)camera.verRes, max(pointA.y, max(pointB.y, pointC.y)));
+
+    // Derive line equations
+    auto x0 = pointA.x;
+    auto x1 = pointB.x;
+    auto x2 = pointC.x;
+    auto y0 = pointA.y;
+    auto y1 = pointB.y;
+    auto y2 = pointC.y;
+
+    auto f01 = [&](double x, double y) {
+        return (x * (y0 - y1)) + (y * (x1 - x0)) + (x0 * y1) - (y0 * x1);
+    };
+    auto f12 = [&](double x, double y) {
+        return (x * (y1 - y2)) + (y * (x2 - x1)) + (x1 * y2) - (y1 * x2);
+    };
+    auto f20 = [&](double x, double y) {
+        return (x * (y2 - y0)) + (y * (x0 - x2)) + (x2 * y0) - (y2 * x0);
+    };
+
+    // Iterate over the pixels in the bounds
+    for (auto y = yMin; y < yMax; ++y)
+    {
+        for (auto x = xMin; x < xMax; ++x)
+        {
+            // Calculate barycentric coordinates
+            auto alpha = f12(x, y) / f12(x0, y0);
+            auto beta = f20(x, y) / f20(x1, y1);
+            auto gamma = f01(x, y) / f01(x2, y2);
+
+            if (alpha >= 0 && beta >= 0 && gamma >= 0){
+                // Calculate color
+                auto c0 = colorsOfVertices[pointA.colorId];
+                auto c1 = colorsOfVertices[pointB.colorId];
+                auto c2 = colorsOfVertices[pointC.colorId];
+
+                auto color = Color(
+                        (alpha * c0->r) + (beta * c1->r) + (gamma * c0->r),
+                        (alpha * c0->g) + (beta * c1->g) + (gamma * c2->g),
+                        (alpha * c0->b) + (beta * c1->b) + (gamma * c2->b)
+                        );
+
+                // Round color
+                color = color.round();
+
+                // Draw pixel
+                image[x][y] = color;
+            }
+        }
+    }
 }
 #pragma endregion
