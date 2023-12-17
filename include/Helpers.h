@@ -72,13 +72,6 @@ Matrix4 multiplyMatrixWithMatrix(Matrix4 m1, Matrix4 m2);
  */
 Vec4 multiplyMatrixWithVec4(Matrix4 m, Vec4 v);
 
-Vec4 divideVec4ByScalar(Vec4 vec4, double scalar) {
-    vec4.x /= scalar;
-    vec4.y /= scalar;
-    vec4.z /= scalar;
-    vec4.t /= scalar;
-
-    return vec4;
-}
+Vec4 divideVec4ByScalar(Vec4 vec4, double scalar);
 
 #endif

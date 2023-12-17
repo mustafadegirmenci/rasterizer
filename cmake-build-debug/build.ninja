@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: ray_tracer
+# Project: rasterizer
 # Configurations: Debug
 # =============================================================================
 
@@ -57,18 +57,6 @@ build CMakeFiles/rasterizer.dir/src/Camera.cpp.obj: CXX_COMPILER__rasterizer_Deb
 
 build CMakeFiles/rasterizer.dir/src/Color.cpp.obj: CXX_COMPILER__rasterizer_Debug C$:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/src/Color.cpp || cmake_object_order_depends_target_rasterizer
   DEP_FILE = CMakeFiles\rasterizer.dir\src\Color.cpp.obj.d
-  FLAGS = -O3 -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\rasterizer.dir
-  OBJECT_FILE_DIR = CMakeFiles\rasterizer.dir\src
-
-build CMakeFiles/rasterizer.dir/src/DummyLine.cpp.obj: CXX_COMPILER__rasterizer_Debug C$:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/src/DummyLine.cpp || cmake_object_order_depends_target_rasterizer
-  DEP_FILE = CMakeFiles\rasterizer.dir\src\DummyLine.cpp.obj.d
-  FLAGS = -O3 -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\rasterizer.dir
-  OBJECT_FILE_DIR = CMakeFiles\rasterizer.dir\src
-
-build CMakeFiles/rasterizer.dir/src/DummyTriangle.cpp.obj: CXX_COMPILER__rasterizer_Debug C$:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/src/DummyTriangle.cpp || cmake_object_order_depends_target_rasterizer
-  DEP_FILE = CMakeFiles\rasterizer.dir\src\DummyTriangle.cpp.obj.d
   FLAGS = -O3 -g -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\rasterizer.dir
   OBJECT_FILE_DIR = CMakeFiles\rasterizer.dir\src
@@ -153,7 +141,7 @@ build CMakeFiles/rasterizer.dir/src/tinyxml2.cpp.obj: CXX_COMPILER__rasterizer_D
 #############################################
 # Link the executable rasterizer.exe
 
-build rasterizer.exe: CXX_EXECUTABLE_LINKER__rasterizer_Debug CMakeFiles/rasterizer.dir/src/Camera.cpp.obj CMakeFiles/rasterizer.dir/src/Color.cpp.obj CMakeFiles/rasterizer.dir/src/DummyLine.cpp.obj CMakeFiles/rasterizer.dir/src/DummyTriangle.cpp.obj CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj CMakeFiles/rasterizer.dir/src/Main.cpp.obj CMakeFiles/rasterizer.dir/src/Matrix4.cpp.obj CMakeFiles/rasterizer.dir/src/Mesh.cpp.obj CMakeFiles/rasterizer.dir/src/Rotation.cpp.obj CMakeFiles/rasterizer.dir/src/Scaling.cpp.obj CMakeFiles/rasterizer.dir/src/Scene.cpp.obj CMakeFiles/rasterizer.dir/src/Translation.cpp.obj CMakeFiles/rasterizer.dir/src/Triangle.cpp.obj CMakeFiles/rasterizer.dir/src/Vec3.cpp.obj CMakeFiles/rasterizer.dir/src/Vec4.cpp.obj CMakeFiles/rasterizer.dir/src/tinyxml2.cpp.obj
+build rasterizer.exe: CXX_EXECUTABLE_LINKER__rasterizer_Debug CMakeFiles/rasterizer.dir/src/Camera.cpp.obj CMakeFiles/rasterizer.dir/src/Color.cpp.obj CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj CMakeFiles/rasterizer.dir/src/Main.cpp.obj CMakeFiles/rasterizer.dir/src/Matrix4.cpp.obj CMakeFiles/rasterizer.dir/src/Mesh.cpp.obj CMakeFiles/rasterizer.dir/src/Rotation.cpp.obj CMakeFiles/rasterizer.dir/src/Scaling.cpp.obj CMakeFiles/rasterizer.dir/src/Scene.cpp.obj CMakeFiles/rasterizer.dir/src/Translation.cpp.obj CMakeFiles/rasterizer.dir/src/Triangle.cpp.obj CMakeFiles/rasterizer.dir/src/Vec3.cpp.obj CMakeFiles/rasterizer.dir/src/Vec4.cpp.obj CMakeFiles/rasterizer.dir/src/tinyxml2.cpp.obj
   FLAGS = -O3 -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\rasterizer.dir

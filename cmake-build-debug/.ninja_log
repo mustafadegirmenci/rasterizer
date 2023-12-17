@@ -1,16 +1,22 @@
 # ninja log v5
 9	1430	7241903841391096	CMakeFiles/rasterizer.dir/src/Camera.cpp.obj	50b464404c831f6c
-15	1305	7241903840131484	CMakeFiles/rasterizer.dir/src/Color.cpp.obj	57e17f9129b0054e
-20	1397	7241903841065386	CMakeFiles/rasterizer.dir/src/Main.cpp.obj	ad8a886e59542e4
+10	1235	7245494728522755	CMakeFiles/rasterizer.dir/src/Color.cpp.obj	57e17f9129b0054e
+7	1333	7245495210090388	CMakeFiles/rasterizer.dir/src/Main.cpp.obj	ad8a886e59542e4
 32	1912	7241903846199214	CMakeFiles/rasterizer.dir/src/Mesh.cpp.obj	ab4a74920b4caaa3
-36	1611	7241903843202434	CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj	3593f7ab0549c7b5
+8	1359	7245494729786192	CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj	3593f7ab0549c7b5
 1306	2442	7241903851501671	CMakeFiles/rasterizer.dir/src/Rotation.cpp.obj	f3928418bc41c677
 1431	2773	7241903854482708	CMakeFiles/rasterizer.dir/src/Translation.cpp.obj	3b5aba91460d0d6b
 1611	2961	7241903856473264	CMakeFiles/rasterizer.dir/src/Triangle.cpp.obj	b74e5f49957f47f7
-26	1380	7241903840884183	CMakeFiles/rasterizer.dir/src/Matrix4.cpp.obj	5c36ea361dd3ded5
+5	1274	7245494728893652	CMakeFiles/rasterizer.dir/src/Matrix4.cpp.obj	5c36ea361dd3ded5
 1398	2709	7241903853739673	CMakeFiles/rasterizer.dir/src/Scaling.cpp.obj	37b771e79a46a76a
 1913	3331	7241903860394267	CMakeFiles/rasterizer.dir/src/Vec3.cpp.obj	f70e368f4df2c7e5
 2442	3773	7241903864806062	CMakeFiles/rasterizer.dir/src/Vec4.cpp.obj	a54ed64569fa95c9
-1380	5106	7241903878164136	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
+12	3406	7245499163861737	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
 2710	6561	7241903892700732	CMakeFiles/rasterizer.dir/src/tinyxml2.cpp.obj	d86d4a63531b7486
 6561	6835	7241903895428388	rasterizer.exe	d99f74ea325e2bb3
+0	216	7245499797238625	build.ninja	5f007dac5ca18acb
+0	213	7245499797238625	build.ninja	5f007dac5ca18acb
+17	1233	7245500829161912	CMakeFiles/rasterizer.dir/src/Matrix4.cpp.obj	5c36ea361dd3ded5
+9	1353	7245500830360561	CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj	3593f7ab0549c7b5
+22	2887	7245500845696300	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
+2887	3194	7245500848733814	rasterizer.exe	d99f74ea325e2bb3

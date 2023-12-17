@@ -2,6 +2,7 @@
 #define _SCENE_H_
 #include "Vec3.h"
 #include "Vec4.h"
+#include "Matrix4.h"
 #include "Color.h"
 #include "Rotation.h"
 #include "Scaling.h"
