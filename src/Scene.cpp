@@ -401,10 +401,17 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
 
                 // Apply viewport transformation
-                // TODO
+                for each (Vec4 vertex in applied){
+                    vertex = multiplyMatrixWithVec4(viewTr, vertex);
+                }
 
                 // Apply rasterization
-                // TODO
+                if (line0_visibility)
+                    rasterizeWireframe(applied[0], c0, applied[1], c1);
+                if (line1_visibility)
+                    rasterizeWireframe(applied[1], c1, applied[2], c2);
+                if (line2_visibility)
+                    rasterizeWireframe(applied[2], c2, applied[0], c0);
 
             }
 
@@ -603,7 +610,7 @@ int computeOutcode(float x, float y, float z) {
 }
 
 // Clip a line using Cohen-Sutherland algorithm
-bool clipLine(Vec3& line1, Color& c1, Vec3& line2, Color& c2) {
+bool clipLine(Vec4& line1, Color& c1, Vec4& line2, Color& c2) {
     // Compute outcodes for the two endpoints of the line
     int outcode1 = computeOutcode(line1.x, line1.y, line1.z);
     int outcode2 = computeOutcode(line2.x, line2.y, line2.z);
@@ -691,7 +698,7 @@ bool clipLine(Vec3& line1, Color& c1, Vec3& line2, Color& c2) {
     return accept;
 }
 
-void Scene::rasterizeWireframe(Vec4 points[3]){
+void Scene::rasterizeWireframe(Vec4& line1, Color& c1, Vec4& line2, Color& c2){
 
 }
 
