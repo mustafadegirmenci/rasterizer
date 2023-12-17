@@ -11,6 +11,13 @@
 #include "../include/Helpers.h"
 #include "../include/Scene.h"
 
+// Outcodes for Cohen-Sutherland algorithm
+#define INSIDE = 0; // 0000
+#define LEFT = 1;   // 0001
+#define RIGHT = 2;  // 0010
+#define BOTTOM = 4; // 0100
+#define TOP = 8;    // 1000
+
 using namespace tinyxml2;
 using namespace std;
 
@@ -364,7 +371,7 @@ void Scene::forwardRenderingPipeline(Camera *camera)
             {
                 auto vertexId = triangle.vertexIds[i];
                 auto vertex = vertices[vertexId];
-                applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, vertex->colorId));
+                applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, 1, vertex->colorId));
             }
 
             // Apply culling
@@ -385,7 +392,13 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 // TODO
 
                 // Apply clipping
-                // TODO
+                Color c0 = this->colorsOfVertices[applied[0].colorId - 1];
+                Color c1 = this->colorsOfVertices[applied[1].colorId - 1];
+                Color c2 = this->colorsOfVertices[applied[2].colorId - 1];
+
+                bool line0_visibility = clipLine(applied[0], c0, applied[1], c1);
+                bool line1_visibility = clipLine(applied[1], c1, applied[2], c2);
+                bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
 
                 // Apply viewport transformation
                 // TODO
@@ -562,6 +575,122 @@ Matrix4 Scene::calculateViewportTransformationMatrix(Camera* camera){
 #pragma endregion
 
 #pragma region Rasterization
+
+// Compute the outcode for a point (x, y, z)
+int computeOutcode(float x, float y, float z) {
+    int code = INSIDE; // Initialize as inside
+
+    double x_min = -1, y_min = -1, z_min = -1;
+
+    double x_max = 1, y_max = 1, z_max = 1;
+
+    if (x < x_min)      // to the left of clip window
+        code |= LEFT;
+    else if (x > x_max) // to the right of clip window
+        code |= RIGHT;
+
+    if (y < y_min)      // below the clip window
+        code |= BOTTOM;
+    else if (y > y_max) // above the clip window
+        code |= TOP;
+
+    if (z < z_min)      // behind the near clipping plane
+        code |= 16;    // Additional bit for z
+    else if (z > z_max) // beyond the far clipping plane
+        code |= 32;    // Additional bit for z
+
+    return code;
+}
+
+// Clip a line using Cohen-Sutherland algorithm
+bool clipLine(Vec3& line1, Color& c1, Vec3& line2, Color& c2) {
+    // Compute outcodes for the two endpoints of the line
+    int outcode1 = computeOutcode(line1.x, line1.y, line1.z);
+    int outcode2 = computeOutcode(line2.x, line2.y, line2.z);
+
+    // Initially assume both endpoints are inside the clip window
+    bool accept = false;
+
+    double x_min = -1, y_min = -1, z_min = -1;
+
+    double x_max = 1, y_max = 1, z_max = 1;
+
+    while (true) {
+        // If both endpoints are inside the clip window, accept the line
+        if ((outcode1 == INSIDE) && (outcode2 == INSIDE)) {
+            accept = true;
+            break;
+        }
+        else if (outcode1 & outcode2) {
+            // If the logical AND is not 0, the line is completely outside the clip window
+            break;
+        }
+        else {
+            // Calculate intersection point
+            float x, y, z;
+
+            // Pick the endpoint outside the clip window
+            int outcodeOut = outcode1 ? outcode1 : outcode2;
+
+            // Find the intersection point
+            if (outcodeOut & TOP) {
+                x = line1.x + (line2.x - line1.x) * (y_max - line1.y) / (line2.y - line1.y);
+                y = y_max;
+                z = line1.z + (line2.z - line1.z) * (y_max - line1.y) / (line2.y - line1.y);
+            }
+            else if (outcodeOut & BOTTOM) {
+                x = line1.x + (line2.x - line1.x) * (y_min - line1.y) / (line2.y - line1.y);
+                y = y_min;
+                z = line1.z + (line2.z - line1.z) * (y_min - line1.y) / (line2.y - line1.y);
+            }
+            else if (outcodeOut & RIGHT) {
+                y = line1.y + (line2.y - line1.y) * (x_max - line1.x) / (line2.x - line1.x);
+                x = x_max;
+                z = line1.z + (line2.z - line1.z) * (x_max - line1.x) / (line2.x - line1.x);
+            }
+            else if (outcodeOut & LEFT) {
+                y = line1.y + (line2.y - line1.y) * (x_min - line1.x) / (line2.x - line1.x);
+                x = x_min;
+                z = line1.z + (line2.z - line1.z) * (x_min - line1.x) / (line2.x - line1.x);
+            }
+            else if (outcodeOut & 16) {
+                z = line1.z + (line2.z - line1.z) * (z_min - line1.y) / (line2.y - line1.y);
+                x = line1.x + (line2.x - line1.x) * (z_min - line1.z) / (line2.z - line1.z);
+                y = line1.y + (line2.y - line1.y) * (z_min - line1.z) / (line2.z - line1.z);
+            }
+            else if (outcodeOut & 32) {
+                z = line1.z + (line2.z - line1.z) * (z_max - line1.y) / (line2.y - line1.y);
+                x = line1.x + (line2.x - line1.x) * (z_max - line1.z) / (line2.z - line1.z);
+                y = line1.y + (line2.y - line1.y) * (z_max - line1.z) / (line2.z - line1.z);
+            }
+
+            // Update the endpoint outside the clip window
+            if (outcodeOut == outcode1) {
+                line1.x = x;
+                line1.y = y;
+                line1.z = z;
+                outcode1 = computeOutcode(line1.x, line1.y, line1.z);
+            }
+            else {
+                line2.x = x;
+                line2.y = y;
+                line2.z = z;
+                outcode2 = computeOutcode(line2.x, line2.y, line2.z);
+            }
+        }
+    }
+
+    // If the line is accepted, update the original endpoints and colors
+    if (accept) {
+        line1 = line1;
+        line2 = line2;
+        c1 = c1;
+        c2 = c2;
+    }
+
+    return accept;
+}
+
 void Scene::rasterizeWireframe(Vec4 points[3]){
 
 }
