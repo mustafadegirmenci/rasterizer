@@ -1,0 +1,4 @@
+"D:\Programs\JetBrains\CLion 2023.1.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Programs/JetBrains/CLion 2023.1.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\Mustafa\Desktop\ceng477\hw2\rasterizer -B C:\Users\Mustafa\Desktop\ceng477\hw2\rasterizer\cmake-build-debug
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/cmake-build-debug

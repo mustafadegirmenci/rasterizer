@@ -1,0 +1,3 @@
+C:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/cmake-build-debug/CMakeFiles/rasterizer.dir
+C:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Mustafa/Desktop/ceng477/hw2/rasterizer/cmake-build-debug/CMakeFiles/rebuild_cache.dir

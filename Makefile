@@ -13,7 +13,7 @@ SUBDIR_SOURCES = $(shell find $(SRC_DIR) -type f -name "*.cpp")
 HEADERS = $(INCLUDE_HEADERS) $(SUBDIR_HEADERS)
 SOURCES = $(INCLUDE_SOURCES) $(SUBDIR_SOURCES)
 
-raytracer: $(HEADERS) $(SOURCES)
+rasterizer: $(HEADERS) $(SOURCES)
 	$(CC) $^ -o$@ $(CFLAGS)
 
 clean:
