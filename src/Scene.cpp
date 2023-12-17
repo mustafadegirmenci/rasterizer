@@ -695,8 +695,8 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
     auto xMin = (int)max(0.0, min(pointA.x, min(pointB.x, pointC.x)));
     auto yMin = (int)max(0.0, min(pointA.y, min(pointB.y, pointC.y)));
 
-    auto xMax = (int)max((double)camera->horRes, max(pointA.x, max(pointB.x, pointC.x)));
-    auto yMax = (int)max((double)camera->verRes, max(pointA.y, max(pointB.y, pointC.y)));
+    auto xMax = (int)min((double)camera->horRes, max(pointA.x, max(pointB.x, pointC.x)));
+    auto yMax = (int)min((double)camera->verRes, max(pointA.y, max(pointB.y, pointC.y)));
 
     // Derive line equations
     auto x0 = pointA.x;
@@ -728,9 +728,9 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
 
             if (alpha >= 0 && beta >= 0 && gamma >= 0){
                 // Calculate color
-                auto c0 = colorsOfVertices[pointA.colorId];
-                auto c1 = colorsOfVertices[pointB.colorId];
-                auto c2 = colorsOfVertices[pointC.colorId];
+                auto c0 = colorsOfVertices[pointA.colorId - 1];
+                auto c1 = colorsOfVertices[pointB.colorId - 1];
+                auto c2 = colorsOfVertices[pointC.colorId - 1];
 
                 auto color = Color(
                         (alpha * c0->r) + (beta * c1->r) + (gamma * c0->r),
