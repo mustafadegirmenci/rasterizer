@@ -20,3 +20,7 @@
 9	1353	7245500830360561	CMakeFiles/rasterizer.dir/src/Helpers.cpp.obj	3593f7ab0549c7b5
 22	2887	7245500845696300	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
 2887	3194	7245500848733814	rasterizer.exe	d99f74ea325e2bb3
+10	5439	7245504433569198	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
+5439	5876	7245504437880831	rasterizer.exe	d99f74ea325e2bb3
+12	5003	7245505583821855	CMakeFiles/rasterizer.dir/src/Scene.cpp.obj	80b2a07d00083124
+5003	5509	7245505588837772	rasterizer.exe	d99f74ea325e2bb3

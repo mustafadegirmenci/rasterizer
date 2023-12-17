@@ -778,7 +778,7 @@ void Scene::forwardRenderingPipeline(Camera *camera)
             for (int i = 0; i < 3; ++i)
             {
                 auto vertexId = triangle.vertexIds[i];
-                auto vertex = vertices[vertexId];
+                auto vertex = vertices[vertexId - 1];
                 applied[i] = multiplyMatrixWithVec4(combined, Vec4(vertex->x, vertex->y, vertex->z, 1, vertex->colorId));
             }
 
