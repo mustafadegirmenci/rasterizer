@@ -519,7 +519,7 @@ int computeOutcode(float x, float y, float z) {
 }
 
 // Clip a line using Cohen-Sutherland algorithm
-bool clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
+void clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
     // Compute outcodes for the two endpoints of the line
     int outcode1 = computeOutcode(line1.x, line1.y, line1.z);
     int outcode2 = computeOutcode(line2.x, line2.y, line2.z);
@@ -595,16 +595,6 @@ bool clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
             }
         }
     }
-
-    // If the line is accepted, update the original endpoints and colors
-    if (accept) {
-        line1 = line1;
-        line2 = line2;
-        c1 = c1;
-        c2 = c2;
-    }
-
-    return accept;
 }
 
 void Scene::rasterizeWireframe(Camera* camera, const Vec4& pointA, const Vec4& pointB) {
@@ -797,9 +787,9 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 Color *c1 = this->colorsOfVertices[applied[1].colorId - 1];
                 Color *c2 = this->colorsOfVertices[applied[2].colorId - 1];
 
-                bool line0_visibility = clipLine(applied[0], c0, applied[1], c1);
-                bool line1_visibility = clipLine(applied[1], c1, applied[2], c2);
-                bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
+                clipLine(applied[0], c0, applied[1], c1);
+                clipLine(applied[1], c1, applied[2], c2);
+                clipLine(applied[2], c2, applied[0], c0);
 
                 // Apply perspective division
                 for (auto & point : applied)
@@ -815,12 +805,9 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 }
 
                 // Apply rasterization
-                if (true)
-                    rasterizeWireframe(camera, applied[0], applied[1]);
-                if (true)
-                    rasterizeWireframe(camera, applied[1], applied[2]);
-                if (true)
-                    rasterizeWireframe(camera, applied[2], applied[0]);
+                rasterizeWireframe(camera, applied[0], applied[1]);
+                rasterizeWireframe(camera, applied[1], applied[2]);
+                rasterizeWireframe(camera, applied[2], applied[0]);
 
             }
 
