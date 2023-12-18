@@ -336,7 +336,7 @@ void Scene::convertPPMToPNG(string ppmFileName)
 {
 	string command;
 
-	command = "./magick convert " + ppmFileName + " " + ppmFileName + ".png";
+	command = "convert " + ppmFileName + " " + ppmFileName + ".png";
 	system(command.c_str());
 }
 
@@ -493,26 +493,26 @@ Matrix4 Scene::calculateViewportTransformationMatrix(Camera* camera){
 #pragma region Rasterization
 
 // Compute the outcode for a point (x, y, z)
-int computeOutcode(float x, float y, float z) {
+int computeOutcode(double x, double y, double z) {
     int code = INSIDE; // Initialize as inside
 
     double x_min = -1, y_min = -1, z_min = -1;
 
     double x_max = 1, y_max = 1, z_max = 1;
 
-    if (x < x_min)      // to the left of clip window
+    if (x <= x_min)      // to the left of clip window
         code |= LEFT;
-    else if (x > x_max) // to the right of clip window
+    else if (x >= x_max) // to the right of clip window
         code |= RIGHT;
 
-    if (y < y_min)      // below the clip window
+    if (y <= y_min)      // below the clip window
         code |= BOTTOM;
-    else if (y > y_max) // above the clip window
+    else if (y >= y_max) // above the clip window
         code |= TOP;
 
-    if (z < z_min)      // behind the near clipping plane
+    if (z <= z_min)      // behind the near clipping plane
         code |= 16;    // Additional bit for z
-    else if (z > z_max) // beyond the far clipping plane
+    else if (z >= z_max) // beyond the far clipping plane
         code |= 32;    // Additional bit for z
 
     return code;
@@ -543,7 +543,7 @@ void clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
         }
         else {
             // Calculate intersection point
-            float x, y, z;
+            double x, y, z;
 
             // Pick the endpoint outside the clip window
             int outcodeOut = outcode1 ? outcode1 : outcode2;
@@ -655,8 +655,8 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
     auto xMin = (int)max(0.0, min(pointA.x, min(pointB.x, pointC.x)));
     auto yMin = (int)max(0.0, min(pointA.y, min(pointB.y, pointC.y)));
 
-    auto xMax = (int)min((double)camera->horRes, max(pointA.x, max(pointB.x, pointC.x)));
-    auto yMax = (int)min((double)camera->verRes, max(pointA.y, max(pointB.y, pointC.y)));
+    auto xMax = (int)max(0.0, min((double)camera->horRes - 1, max(pointA.x, max(pointB.x, pointC.x))));
+    auto yMax = (int)max(0.0, min((double)camera->verRes - 1, max(pointA.y, max(pointB.y, pointC.y))));
 
     // Derive line equations
     auto x0 = pointA.x;
