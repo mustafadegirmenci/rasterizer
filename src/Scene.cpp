@@ -716,16 +716,29 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
     auto f20 = [&](double x, double y) {
         return (x * (y2 - y0)) + (y * (x0 - x2)) + (x2 * y0) - (y2 * x0);
     };
-    auto calculateDepth = [](const Vec4& v0, const Vec4& v1, const Vec4& v2, double alpha, double beta, double gamma) {
-        double depthV0 = v0.z;
-        double depthV1 = v1.z;
-        double depthV2 = v2.z;
+    auto calculateDepth = [&](double alpha, double beta, double gamma) {
+        double depthV0 = pointA.z;
+        double depthV1 = pointB.z;
+        double depthV2 = pointC.z;
 
         double interpolatedDepth = depthV0 * alpha +
                                    depthV1 * beta +
                                    depthV2 * gamma;
 
         return interpolatedDepth;
+    };
+    auto calculateColor = [&](double alpha, double beta, double gamma) {
+        auto c0 = colorsOfVertices[pointA.colorId - 1];
+        auto c1 = colorsOfVertices[pointB.colorId - 1];
+        auto c2 = colorsOfVertices[pointC.colorId - 1];
+
+        auto color = Color(
+                (alpha * (c0->r)) + (beta * (c1->r)) + (gamma * (c2->r)),
+                (alpha * (c0->g)) + (beta * (c1->g)) + (gamma * (c2->g)),
+                (alpha * (c0->b)) + (beta * (c1->b)) + (gamma * (c2->b))
+        );
+
+        return color;
     };
 #pragma endregion
 
@@ -743,20 +756,12 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
             if (alpha >= 0 && beta >= 0 && gamma >= 0){
 
                 // Test depth
-                auto calculatedDepth = calculateDepth(pointA, pointB, pointC, alpha, beta, gamma);
+                auto calculatedDepth = calculateDepth(alpha, beta, gamma);
                 if (calculatedDepth < depth[y][x]){
                     depth[y][x] = calculatedDepth;
 
                     // Calculate color
-                    auto c0 = colorsOfVertices[pointA.colorId - 1];
-                    auto c1 = colorsOfVertices[pointB.colorId - 1];
-                    auto c2 = colorsOfVertices[pointC.colorId - 1];
-
-                    auto color = Color(
-                            (alpha * (c0->r)) + (beta * (c1->r)) + (gamma * (c0->r)),
-                            (alpha * (c0->g)) + (beta * (c1->g)) + (gamma * (c2->g)),
-                            (alpha * (c0->b)) + (beta * (c1->b)) + (gamma * (c2->b))
-                    );
+                    auto color = calculateColor(alpha, beta, gamma);
 
                     // Round color
                     color = color.round();
