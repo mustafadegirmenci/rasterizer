@@ -1,3 +1,5 @@
+#include <iostream>
+
 #ifndef __SCALING_H__
 #define __SCALING_H__
 

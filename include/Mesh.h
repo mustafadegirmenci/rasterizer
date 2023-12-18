@@ -1,3 +1,5 @@
+#include <vector>
+
 #ifndef __MESH_H__
 #define __MESH_H__
 #define WIREFRAME_MESH 0

@@ -1,4 +1,3 @@
-#include <vector>
 #include <iomanip>
 #include "../include/Mesh.h"
 

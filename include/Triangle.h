@@ -1,3 +1,5 @@
+#include <iostream>
+
 #ifndef __TRIANGLE_H__
 #define __TRIANGLE_H__
 

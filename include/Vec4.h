@@ -1,3 +1,5 @@
+#include <iostream>
+
 #ifndef __VEC4_H__
 #define __VEC4_H__
 #define NO_COLOR -1

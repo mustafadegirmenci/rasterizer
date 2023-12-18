@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <vector>
 #include <cmath>
 
 #include "../include/tinyxml2.h"
