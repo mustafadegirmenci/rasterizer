@@ -609,45 +609,52 @@ bool clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
 
 void Scene::rasterizeWireframe(Camera* camera, const Vec4& pointA, const Vec4& pointB) {
     // Calculate bounds for efficient rasterization
-    auto xMin = (int)max(0.0, min(pointA.x, pointB.x));
-    auto yMin = (int)max(0.0, min(pointA.y, pointB.y));
+    auto x0 = (int)pointA.x;
+    auto y0 = (int)pointA.y;
+    auto x1 = (int)pointB.x;
+    auto y1 = (int)pointB.y;
 
-    auto xMax = (int)std::min((double)camera->horRes, std::max(pointA.x, pointB.x));
-    auto yMax = (int)std::min((double)camera->verRes, std::max(pointA.y, pointB.y));
+    // Determine differences and directions
+    auto dx = abs(x1 - x0);
+    auto dy = abs(y1 - y0);
+    auto sx = x0 < x1 ? 1 : -1;
+    auto sy = y0 < y1 ? 1 : -1;
+    auto err = (dx > dy ? dx : -dy) / 2;
+    auto e2;
 
-    // Derive line equation
-    auto x0 = pointA.x;
-    auto x1 = pointB.x;
-    auto y0 = pointA.y;
-    auto y1 = pointB.y;
-
-    // Calculate color interpolation components
+    // Interpolate colors between pointA and pointB
     auto c0 = colorsOfVertices[pointA.colorId - 1];
     auto c1 = colorsOfVertices[pointB.colorId - 1];
-    auto dx = x1 - x0;
-    auto dy = y1 - y0;
-    auto steps = std::max(std::abs(dx), std::abs(dy));
-    auto dR = (c1->r - c0->r) / steps;
-    auto dG = (c1->g - c0->g) / steps;
-    auto dB = (c1->b - c0->b) / steps;
 
-    // Iterate over the line
-    for (int i = 0; i <= steps; ++i) {
-        double t = i / steps;
-        auto x = (int)(x0 + dx * t);
-        auto y = (int)(y0 + dy * t);
+    // Iterate over the line pixels and interpolate color
+    while (true) {
+        // Interpolate color
+        double t = sqrt((x0 - pointA.x) * (x0 - pointA.x) + (y0 - pointA.y) * (y0 - pointA.y)) /
+                   sqrt((pointB.x - pointA.x) * (pointB.x - pointA.x) + (pointB.y - pointA.y) * (pointB.y - pointA.y));
+        auto color = Color(
+                (1 - t) * c0->r + t * c1->r,
+                (1 - t) * c0->g + t * c1->g,
+                (1 - t) * c0->b + t * c1->b
+        );
 
-        // Ensure pixel is within bounds
-        if (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
-            // Interpolate color
-            auto color = Color(
-                    (c0->r + dR * i),
-                    (c0->g + dG * i),
-                    (c0->b + dB * i)
-            );
+        // Round color
+        color = color.round();
 
-            // Draw pixel
-            image[x][y] = color.round();
+        // Draw pixel with the interpolated color
+        if (x0 >= 0 && y0 >= 0 && x0 < camera->horRes && y0 < camera->verRes)
+            image[x0][y0] = color;
+
+        if (x0 == x1 && y0 == y1)
+            break;
+
+        e2 = err;
+        if (e2 > -dx) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dy) {
+            err += dx;
+            y0 += sy;
         }
     }
 }
