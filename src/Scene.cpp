@@ -607,83 +607,47 @@ bool clipLine(Vec4& line1, Color* c1, Vec4& line2, Color* c2) {
     return accept;
 }
 
-void Scene::rasterizeWireframe(Vec4& start, Color* startColor, Vec4& end, Color* endColor) {
-    // Calculate differences in x and y coordinates
-    double dx = end.x - start.x;
-    double dy = end.y - start.y;
-    Color dc = *endColor - *startColor;
+void Scene::rasterizeWireframe(Camera* camera, const Vec4& pointA, const Vec4& pointB) {
+    // Calculate bounds for efficient rasterization
+    auto xMin = (int)max(0.0, min(pointA.x, pointB.x));
+    auto yMin = (int)max(0.0, min(pointA.y, pointB.y));
 
-    // Variables for the Midpoint Algorithm
-    int d, increment = 1;
-    Color currentColor;
+    auto xMax = (int)std::min((double)camera->horRes, std::max(pointA.x, pointB.x));
+    auto yMax = (int)std::min((double)camera->verRes, std::max(pointA.y, pointB.y));
 
-    // Check if the line slope is between 0 < m <= 1
-    if (std::abs(dy) <= std::abs(dx)) {
-        // Normal Midpoint Algorithm
-        if (dx < 0) {
-            // Swap points to ensure x is always increasing
-            std::swap(start, end);
-            std::swap(startColor, endColor);
-        }
-        if (dy < 0) {
-            // Ensure the line goes in the negative direction in each iteration
-            increment = -1;
-        }
+    // Derive line equation
+    auto x0 = pointA.x;
+    auto x1 = pointB.x;
+    auto y0 = pointA.y;
+    auto y1 = pointB.y;
 
-        int y = start.y;
-        currentColor = *startColor;
-        d = increment * 0.5 * dx - dy;
-        dc = dc / dx;
+    // Calculate color interpolation components
+    auto c0 = colorsOfVertices[pointA.colorId - 1];
+    auto c1 = colorsOfVertices[pointB.colorId - 1];
+    auto dx = x1 - x0;
+    auto dy = y1 - y0;
+    auto steps = std::max(std::abs(dx), std::abs(dy));
+    auto dR = (c1->r - c0->r) / steps;
+    auto dG = (c1->g - c0->g) / steps;
+    auto dB = (c1->b - c0->b) / steps;
 
-        for (int x = start.x; x <= end.x; x++) {
-            // Set the pixel color
-            image[x][y] = currentColor.round();
+    // Iterate over the line
+    for (int i = 0; i <= steps; ++i) {
+        double t = i / steps;
+        auto x = (int)(x0 + dx * t);
+        auto y = (int)(y0 + dy * t);
 
-            if (d * increment < 0) { // Choose NE
-                y += increment;
-                d -= dy;
-                d += increment * dx;
-            }
-            else { // Choose E
-                d -= dy;
-            }
+        // Ensure pixel is within bounds
+        if (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
+            // Interpolate color
+            auto color = Color(
+                    (c0->r + dR * i),
+                    (c0->g + dG * i),
+                    (c0->b + dB * i)
+            );
 
-            // Update color for the next pixel
-            currentColor = currentColor + dc;
-        }
-    }
-    else if (std::abs(dy) > std::abs(dx)) {
-        // Modified Midpoint Algorithm for 1 < m < INF
-        if (dy < 0) {
-            // Swap points to ensure y is always increasing
-            std::swap(start, end);
-            std::swap(startColor, endColor);
-        }
-        if (dx < 0) {
-            // Ensure the line goes in the negative direction in each iteration
-            increment = -1;
-        }
-
-        int x = start.x;
-        currentColor = *startColor;
-        d = dx - increment * 0.5 * dy;
-        dc = dc / dy;
-
-        for (int y = start.y; y <= end.y; y++) {
-            // Set the pixel color
-            image[x][y] = currentColor.round();
-
-            if (d * increment > 0) { // Choose NE
-                x += increment;
-                d += dx;
-                d -= increment * dy;
-            }
-            else {
-                d += dx;
-            }
-
-            // Update color for the next pixel
-            currentColor = currentColor + dc;
+            // Draw pixel
+            image[x][y] = color.round();
         }
     }
 }
@@ -830,18 +794,26 @@ void Scene::forwardRenderingPipeline(Camera *camera)
                 bool line1_visibility = clipLine(applied[1], c1, applied[2], c2);
                 bool line2_visibility = clipLine(applied[2], c2, applied[0], c0);
 
+                // Apply perspective division
+                for (auto & point : applied)
+                {
+                    auto perspective = point.t;
+                    point = divideVec4ByScalar(point, perspective);
+                }
+
                 // Apply viewport transformation
-                for (auto vertex:applied){
-                    vertex = multiplyMatrixWithVec4(viewTr, vertex);
+                for (auto & point : applied)
+                {
+                    point = multiplyMatrixWithVec4(viewTr, point);
                 }
 
                 // Apply rasterization
-                if (line0_visibility)
-                    rasterizeWireframe(applied[0], c0, applied[1], c1);
-                if (line1_visibility)
-                    rasterizeWireframe(applied[1], c1, applied[2], c2);
-                if (line2_visibility)
-                    rasterizeWireframe(applied[2], c2, applied[0], c0);
+                if (true)
+                    rasterizeWireframe(camera, applied[0], applied[1]);
+                if (true)
+                    rasterizeWireframe(camera, applied[1], applied[2]);
+                if (true)
+                    rasterizeWireframe(camera, applied[2], applied[0]);
 
             }
 

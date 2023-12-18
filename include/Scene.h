@@ -41,8 +41,9 @@ public:
     static Matrix4 calculatePerspectiveTransformationMatrix(Camera *camera);
     static Matrix4 calculateViewportTransformationMatrix(Camera *camera);
 
-    void rasterizeWireframe(Vec4& start, Color* startColor, Vec4& end, Color* endColor);
     void rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& pointB, const Vec4& pointC);
+
+    void rasterizeWireframe(Camera *camera, const Vec4 &pointA, const Vec4 &pointB);
 };
 
 #endif
