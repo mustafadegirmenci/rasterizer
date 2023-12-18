@@ -706,6 +706,7 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
     auto y1 = pointB.y;
     auto y2 = pointC.y;
 
+#pragma region Rasterization Helpers
     auto f01 = [&](double x, double y) {
         return (x * (y0 - y1)) + (y * (x1 - x0)) + (x0 * y1) - (y0 * x1);
     };
@@ -715,6 +716,18 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
     auto f20 = [&](double x, double y) {
         return (x * (y2 - y0)) + (y * (x0 - x2)) + (x2 * y0) - (y2 * x0);
     };
+    auto calculateDepth = [](const Vec4& v0, const Vec4& v1, const Vec4& v2, double alpha, double beta, double gamma) {
+        double depthV0 = v0.z;
+        double depthV1 = v1.z;
+        double depthV2 = v2.z;
+
+        double interpolatedDepth = depthV0 * alpha +
+                                   depthV1 * beta +
+                                   depthV2 * gamma;
+
+        return interpolatedDepth;
+    };
+#pragma endregion
 
     // Iterate over the pixels in the bounds
     for (auto y = yMin; y < yMax; ++y)
@@ -726,23 +739,31 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
             auto beta = f20(x, y) / f20(x1, y1);
             auto gamma = f01(x, y) / f01(x2, y2);
 
+            // Check whether the pixel is inside the triangle
             if (alpha >= 0 && beta >= 0 && gamma >= 0){
-                // Calculate color
-                auto c0 = colorsOfVertices[pointA.colorId - 1];
-                auto c1 = colorsOfVertices[pointB.colorId - 1];
-                auto c2 = colorsOfVertices[pointC.colorId - 1];
 
-                auto color = Color(
-                        (alpha * c0->r) + (beta * c1->r) + (gamma * c0->r),
-                        (alpha * c0->g) + (beta * c1->g) + (gamma * c2->g),
-                        (alpha * c0->b) + (beta * c1->b) + (gamma * c2->b)
-                );
+                // Test depth
+                auto calculatedDepth = calculateDepth(pointA, pointB, pointC, alpha, beta, gamma);
+                if (calculatedDepth < depth[y][x]){
+                    depth[y][x] = calculatedDepth;
 
-                // Round color
-                color = color.round();
+                    // Calculate color
+                    auto c0 = colorsOfVertices[pointA.colorId - 1];
+                    auto c1 = colorsOfVertices[pointB.colorId - 1];
+                    auto c2 = colorsOfVertices[pointC.colorId - 1];
 
-                // Draw pixel
-                image[x][y] = color;
+                    auto color = Color(
+                            (alpha * (c0->r)) + (beta * (c1->r)) + (gamma * (c0->r)),
+                            (alpha * (c0->g)) + (beta * (c1->g)) + (gamma * (c2->g)),
+                            (alpha * (c0->b)) + (beta * (c1->b)) + (gamma * (c2->b))
+                    );
+
+                    // Round color
+                    color = color.round();
+
+                    // Draw pixel
+                    image[x][y] = color;
+                }
             }
         }
     }
