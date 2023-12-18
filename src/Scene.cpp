@@ -742,9 +742,9 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
 #pragma endregion
 
     // Iterate over the pixels in the bounds
-    for (auto y = yMin; y < yMax; ++y)
+    for (auto y = yMin; y <= yMax; ++y)
     {
-        for (auto x = xMin; x < xMax; ++x)
+        for (auto x = xMin; x <= xMax; ++x)
         {
             // Calculate barycentric coordinates
             auto alpha = f12(x, y) / f12(x0, y0);
