@@ -378,7 +378,7 @@ Matrix4 Scene::calculateModelingTransformationMatrix(Mesh* mesh){
         }
 
         // Rotation
-        if (mesh->transformationTypes[i] == 's')
+        if (mesh->transformationTypes[i] == 'r')
         {
             auto rotation = rotations[mesh->transformationIds[i] - 1];
 
@@ -448,14 +448,14 @@ Matrix4 Scene::calculateOrthographicTransformationMatrix(Camera* camera){
     auto n = camera->near;
     auto f = camera->far;
 
-    double perspective[4][4] = {
+    double orthographic[4][4] = {
             {2/(r - l),             0,                  0,                  -((r + l) / (r - l))},
             {0,                     2/(t - b),          0,                  -((t + b) / (t - b))},
             {0,                     0,                  -(2/(f - n)),       -((f + n) / (f - n))},
             {0,                     0,                  0,                  1                   }
     };
 
-    return perspective;
+    return orthographic;
 }
 
 Matrix4 Scene::calculatePerspectiveTransformationMatrix(Camera* camera){
