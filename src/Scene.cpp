@@ -620,7 +620,7 @@ void Scene::rasterizeWireframe(Camera* camera, const Vec4& pointA, const Vec4& p
     auto sx = x0 < x1 ? 1 : -1;
     auto sy = y0 < y1 ? 1 : -1;
     auto err = (dx > dy ? dx : -dy) / 2;
-    auto e2;
+    auto e2 = err;
 
     // Interpolate colors between pointA and pointB
     auto c0 = colorsOfVertices[pointA.colorId - 1];
@@ -727,8 +727,8 @@ void Scene::rasterizeSolid(Camera* camera, const Vec4& pointA, const Vec4& point
 
                 // Test depth
                 auto calculatedDepth = calculateDepth(alpha, beta, gamma);
-                if (calculatedDepth < depth[y][x]){
-                    depth[y][x] = calculatedDepth;
+                if (calculatedDepth < depth[x][y]){
+                    depth[x][y] = calculatedDepth;
 
                     // Calculate color
                     auto color = calculateColor(alpha, beta, gamma);
